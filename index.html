@@ -5,39 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shoot School - Final</title>
     <style>
-        /* --- ESTILOS (CSS) --- */
+        /* CSS TOTALMENTE INTEGRADO */
         body { margin: 0; overflow: hidden; background-color: #0d1117; color: white; font-family: 'Segoe UI', sans-serif; user-select: none; }
-        
-        /* Imagen de fondo del Lobby */
         #image-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
         
-        /* Contenedores Principales */
         #inicio_pantalla, #lobby_pantalla { position: absolute; z-index: 10; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); }
-        #lobby_pantalla { display: none; justify-content: flex-start; padding-top: 50px; background: transparent; pointer-events: none; } /* Transparente para ver el modelo 3D */
+        #lobby_pantalla { display: none; justify-content: flex-start; padding-top: 50px; background: transparent; pointer-events: none; }
         
-        /* Interfaz del Juego (HUD) */
         #hud_pantalla { display: none; position: absolute; z-index: 100; width: 100%; height: 100%; pointer-events: none; }
         #crosshair { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); }
         #crosshair::before, #crosshair::after { content: ''; position: absolute; background: #00FF00; box-shadow: 0 0 5px rgba(0, 255, 0, 0.8); }
         #crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; }
         #crosshair::after { top: 0; left: 9px; width: 2px; height: 20px; }
+        
         #ui { position: absolute; bottom: 30px; left: 30px; background: rgba(0, 0, 0, 0.5); padding: 15px 25px; border-radius: 10px; border-left: 5px solid #00C853; display: flex; gap: 20px; font-size: 1.5rem; font-weight: bold; }
         
-        /* Formularios y Botones */
         .caja-login { background: #161b22; padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #30363d; pointer-events: auto; }
         input, select, button { margin: 10px; padding: 10px; font-size: 1.2rem; border-radius: 5px; border: 1px solid #555; background: #222; color: white; }
         button { background: #00C853; color: black; font-weight: bold; cursor: pointer; border: none; }
         button:hover { background: #00e676; transform: scale(1.05); }
         
-        /* Menús del Lobby */
         .menu-top { position: absolute; top: 20px; display: flex; gap: 20px; pointer-events: auto; }
         .caja-amigos { position: absolute; left: 20px; top: 100px; background: rgba(22, 27, 34, 0.9); padding: 20px; border-radius: 10px; width: 250px; pointer-events: auto; }
         
-        /* Modal Servidores */
         #modal-servidores { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; pointer-events: auto;}
         .modal-content { background: #161b22; padding: 30px; border-radius: 10px; width: 400px; border: 1px solid #00C853; }
         
-        /* El lienzo 3D */
         #threejs_canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
     </style>
 </head>
@@ -73,8 +66,8 @@
             <h3>En Línea (3)</h3>
             <hr style="border-color: #333;">
             <p>1. Alonso XD</p>
-            <p>2. Amigo 1</p>
-            <p>3. Amigo 2</p>
+            <p>2. CimaGod</p>
+            <p>3. Bendy Ankles</p>
         </div>
     </div>
 
@@ -111,9 +104,6 @@
                 { host: "Bendy Ankles", mapa: "noche", jugadores: 1, max: 4 }
             ],
 
-            velocidadY: 0,
-            gravedad: -0.012, 
-            enSuelo: false,
             controls: null, 
             murosDeColision: [], 
 
@@ -178,9 +168,8 @@
 
                 const loader = new THREE.GLTFLoader();
                 
-                // ⚠️ ¡ATENCIÓN AQUÍ! PON TUS NOMBRES REALES DE GITHUB
-                // Si no tienes skin de mujer, pon el nombre de la skin de hombre en ambos.
-                const skinUrl = this.stats.genero === "hombre" ? "TU_SKIN_HOMBRE.glb" : "TU_SKIN_MUJER.glb";
+                // 🔥🔥 AQUÍ CAMBIAS EL NOMBRE DE TUS PERSONAJES 🔥🔥
+                const skinUrl = this.stats.genero === "hombre" ? "NOMBRE_SKIN_HOMBRE.glb" : "NOMBRE_SKIN_MUJER.glb";
                 
                 loader.load(skinUrl, (gltf) => {
                     this.playerModel = gltf.scene;
@@ -208,88 +197,4 @@
 
                 this.partidaActiva = true;
 
-                if(clima === 'noche') this.scene.background = new THREE.Color(0x000005);
-                else if(clima === 'atardecer') this.scene.background = new THREE.Color(0x442200);
-                else this.scene.background = new THREE.Color(0x87ceeb); 
-                
-                this.controls = new THREE.PointerLockControls(this.camera, document.body);
-                this.scene.add(this.controls.getObject());
-                
-                document.body.onclick = () => {
-                    if(this.partidaActiva) this.controls.lock();
-                };
-
-                if(this.playerModel) this.scene.add(this.playerModel); 
-                
-                this.murosDeColision = [];
-                const loader = new THREE.GLTFLoader();
-                
-                // ⚠️ ¡ATENCIÓN AQUÍ! PON EL NOMBRE REAL DE TU MAPA EN GITHUB
-                loader.load("NOMBRE_DE_TU_MAPA.glb", (gltf) => {
-                    gltf.scene.traverse(child => {
-                        if (child.isMesh) {
-                            this.murosDeColision.push(child); 
-                        }
-                    });
-                    this.scene.add(gltf.scene);
-                    
-                    if(this.controls) this.controls.getObject().position.set(0, 1.6, -10); 
-                }, undefined, function(error){ console.error("Error cargando Mapa:", error); });
-            },
-
-            disparar: function() { console.log("PUM! Disparaste."); },
-
-            loop: function() {
-                requestAnimationFrame(() => this.loop());
-                
-                if(this.partidaActiva && this.controls && this.controls.isLocked) {
-                    const delta = this.clock.getDelta();
-                    const vel = this.teclas['ShiftLeft'] ? 0.3 : 0.15; 
-                    
-                    let dirFrontal = new THREE.Vector3();
-                    this.camera.getWorldDirection(dirFrontal);
-                    dirFrontal.y = 0; 
-                    dirFrontal.normalize();
-
-                    let dirLateral = new THREE.Vector3();
-                    dirLateral.crossVectors(this.camera.up, dirFrontal).normalize();
-
-                    const posActual = this.controls.getObject().position.clone();
-                    let posFutura = posActual.clone();
-
-                    if(this.teclas['KeyW']) posFutura.addScaledVector(dirFrontal, vel);
-                    if(this.teclas['KeyS']) posFutura.addScaledVector(dirFrontal, -vel);
-                    if(this.teclas['KeyA']) posFutura.addScaledVector(dirLateral, vel);
-                    if(this.teclas['KeyD']) posFutura.addScaledVector(dirLateral, -vel);
-
-                    const direccionCaminada = posFutura.clone().sub(posActual).normalize();
-                    if(direccionCaminada.length() > 0) {
-                        this.raycaster.set(posActual, direccionCaminada);
-                        const intercepciones = this.raycaster.intersectObjects(this.murosDeColision);
-                        if(intercepciones.length > 0 && intercepciones[0].distance < 1) {
-                            // Colisión detectada
-                        } else {
-                            this.controls.getObject().position.copy(posFutura);
-                        }
-                    }
-
-                    this.camera.position.y = 1.6; 
-                    
-                    if (this.playerModel) {
-                        this.playerModel.position.copy(this.controls.getObject().position);
-                        this.playerModel.position.y -= 1.6; 
-                        this.playerModel.rotation.y = this.controls.getObject().rotation.y; 
-                    }
-                    
-                } else if (this.playerModel && !this.partidaActiva) {
-                    this.playerModel.rotation.y += 0.002;
-                }
-
-                if(this.renderer) this.renderer.render(this.scene, this.camera);
-            }
-        };
-
-        window.onload = () => juego.init();
-    </script>
-</body>
-</html>
+                if(clima === 'n
