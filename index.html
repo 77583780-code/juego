@@ -2,22 +2,96 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Shoot School - CS2 Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shoot School - CS2 Lobby</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; }
-        #crosshair {
-            position: absolute; top: 50%; left: 50%;
-            width: 20px; height: 20px;
-            border: 2px solid lime; border-radius: 50%;
-            transform: translate(-50%, -50%); pointer-events: none;
+        body { margin: 0; overflow: hidden; background-color: #0d1117; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #fff; }
+        
+        /* Fondo táctico con transparencia */
+        #fondo-tactico {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('./image_670a80.jpg'); /* Reemplaza por tu imagen */
+            background-size: cover; background-position: center; opacity: 0.15; filter: grayscale(100%); z-index: -1;
         }
+
+        /* --- BARRA SUPERIOR --- */
+        #navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 40px; background-color: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(5px); border-bottom: 1px solid #30363d; z-index: 10;
+        }
+        #pestañas { display: flex; gap: 30px; }
+        .pestaña { font-size: 1.1rem; font-weight: bold; text-transform: uppercase; cursor: pointer; opacity: 0.7; transition: opacity 0.3s; }
+        .pestaña:hover, .pestaña.activa { opacity: 1; border-bottom: 2px solid #fff; }
+        #logo { font-size: 1.5rem; font-weight: bold; letter-spacing: 1px; color: #fdfdfd; }
+
+        /* --- CONTENEDOR CENTRAL DEL LOBBY --- */
+        #lobby-container {
+            display: flex; justify-content: space-between; align-items: stretch;
+            height: calc(100vh - 75px); padding: 40px; box-sizing: border-bottom;
+        }
+
+        /* Paneles laterales */
+        .panel {
+            width: 250px; background-color: rgba(22, 27, 34, 0.8);
+            border-radius: 12px; border: 1px solid #30363d; padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 5;
+        }
+        .panel h3 { margin-top: 0; border-bottom: 2px solid #30363d; padding-bottom: 10px; }
+
+        /* Lienzo para el personaje 3D central */
+        #canvas-personaje {
+            flex-grow: 1; display: flex; justify-content: center; align-items: end; position: relative;
+        }
+
+        /* --- BOTÓN JUGAR --- */
+        #btn-play {
+            position: absolute; bottom: 50px; left: 50%;
+            transform: translateX(-50%); width: 280px; height: 70px;
+            background: linear-gradient(135deg, #189c44, #00C853);
+            border: none; border-radius: 50px; color: #fff;
+            font-size: 2rem; font-weight: bold; text-transform: uppercase;
+            box-shadow: 0 10px 30px rgba(0, 200, 83, 0.6); cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s; z-index: 15;
+        }
+        #btn-play:hover { transform: translateX(-50%) translateY(-3px); box-shadow: 0 15px 40px rgba(0, 200, 83, 0.8); }
+        #btn-play:active { transform: translateX(-50%) translateY(1px); box-shadow: 0 5px 20px rgba(0, 200, 83, 0.5); }
     </style>
 </head>
 <body>
-    <div id="crosshair"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="./index.js"></script>
+    <div id="fondo-tactico"></div>
+
+    <div id="navbar">
+        <div id="logo">SHOOT SCHOOL</div>
+        <div id="pestañas">
+            <div class="pestaña activa">Jugar (Play)</div>
+            <div class="pestaña">Inventario</div>
+            <div class="pestaña">Ajustes</div>
+            <div class="pestaña">Social</div>
+        </div>
+        <div>Alonso XD V1.0</div>
+    </div>
+
+    <div id="lobby-container">
+        <div class="panel">
+            <h3>Online (3)</h3>
+            <p>1. Alonso XD</p>
+            <p>2. Amigo 1</p>
+            <p>3. Amigo 2</p>
+        </div>
+
+        <div id="canvas-personaje">
+            <button id="btn-play">Jugar</button>
+            </div>
+
+        <div class="panel">
+            <h3>Tus Estadísticas</h3>
+            <p>Partidas: 0</p>
+            <p>Kills: 0</p>
+            <p>Mapa Favorito: Office</p>
+        </div>
+    </div>
 </body>
 </html>
