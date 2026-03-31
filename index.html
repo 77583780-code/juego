@@ -1,111 +1,295 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shoot School Cima God</title>
-  
-  <link rel="stylesheet" href="style.css" />
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shoot School - Final</title>
+    <style>
+        /* --- ESTILOS (CSS) --- */
+        body { margin: 0; overflow: hidden; background-color: #0d1117; color: white; font-family: 'Segoe UI', sans-serif; user-select: none; }
+        
+        /* Imagen de fondo del Lobby */
+        #image-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+        
+        /* Contenedores Principales */
+        #inicio_pantalla, #lobby_pantalla { position: absolute; z-index: 10; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); }
+        #lobby_pantalla { display: none; justify-content: flex-start; padding-top: 50px; background: transparent; pointer-events: none; } /* Transparente para ver el modelo 3D */
+        
+        /* Interfaz del Juego (HUD) */
+        #hud_pantalla { display: none; position: absolute; z-index: 100; width: 100%; height: 100%; pointer-events: none; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); }
+        #crosshair::before, #crosshair::after { content: ''; position: absolute; background: #00FF00; box-shadow: 0 0 5px rgba(0, 255, 0, 0.8); }
+        #crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; }
+        #crosshair::after { top: 0; left: 9px; width: 2px; height: 20px; }
+        #ui { position: absolute; bottom: 30px; left: 30px; background: rgba(0, 0, 0, 0.5); padding: 15px 25px; border-radius: 10px; border-left: 5px solid #00C853; display: flex; gap: 20px; font-size: 1.5rem; font-weight: bold; }
+        
+        /* Formularios y Botones */
+        .caja-login { background: #161b22; padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #30363d; pointer-events: auto; }
+        input, select, button { margin: 10px; padding: 10px; font-size: 1.2rem; border-radius: 5px; border: 1px solid #555; background: #222; color: white; }
+        button { background: #00C853; color: black; font-weight: bold; cursor: pointer; border: none; }
+        button:hover { background: #00e676; transform: scale(1.05); }
+        
+        /* Menús del Lobby */
+        .menu-top { position: absolute; top: 20px; display: flex; gap: 20px; pointer-events: auto; }
+        .caja-amigos { position: absolute; left: 20px; top: 100px; background: rgba(22, 27, 34, 0.9); padding: 20px; border-radius: 10px; width: 250px; pointer-events: auto; }
+        
+        /* Modal Servidores */
+        #modal-servidores { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; pointer-events: auto;}
+        .modal-content { background: #161b22; padding: 30px; border-radius: 10px; width: 400px; border: 1px solid #00C853; }
+        
+        /* El lienzo 3D */
+        #threejs_canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+    </style>
 </head>
 <body>
 
-    <div id="image-background"></div>
+    <img id="image-background" src="https://images.unsplash.com/photo-1542382257-80da9fb9f5c5?q=80&w=1920&auto=format&fit=crop" alt="Fondo">
 
     <div id="threejs_canvas"></div>
 
-    <div id="inicio_pantalla" class="pantalla-ui">
-        <div class="caja_menu_inicial">
-            <h1>SHOOT SCHOOL CIMA GOD</h1>
-            <input type="text" id="reg_nombre" placeholder="Nombre de Jugador">
+    <div id="inicio_pantalla">
+        <div class="caja-login">
+            <h1 style="color: #00C853; font-size: 3rem; margin-top: 0;">SHOOT SCHOOL</h1>
+            <p>Ingresa tu nombre de soldado:</p>
+            <input type="text" id="reg_nombre" placeholder="Ej: Alonso XD">
+            <br>
             <select id="reg-genero">
-                <option value="hombre">Skin: Master Chief</option>
-                <option value="mujer">Skin: Chica</option>
+                <option value="hombre">Personaje: Hombre</option>
+                <option value="mujer">Personaje: Mujer</option>
             </select>
-            <button class="btn-amarillo" id="btn_entrar_lobby">INICIAR SESIÓN</button>
+            <br><br>
+            <button id="btn_entrar_lobby">ENTRAR AL LOBBY</button>
         </div>
     </div>
 
-    <div id="lobby_pantalla" class="pantalla-ui" style="display: none;">
-        
-        <div class="top-header">
-            <div class="logo">SHOOT SCHOOL CIMA GOD</div>
-            <div class="user-info">
-                <span class="coins">C 900 Cima Coins</span>
-                <span class="user-badge">S</span>
-                <span id="display_nombre_user">Soldado</span>
-            </div>
+    <div id="lobby_pantalla">
+        <div class="menu-top">
+            <button id="btn_play_main" style="font-size: 1.5rem; padding: 15px 40px;">JUGAR RÁPIDO</button>
+            <button onclick="juego.abrirModal()">VER SERVIDORES</button>
+            <span id="display_nombre_user" style="font-size: 1.5rem; margin-top: 15px; color: #00C853;">User</span>
         </div>
 
-        <div class="main-nav">
-            <span class="nav-item active">LOBBY</span>
-            <span class="nav-item">BATTLE PASS</span>
-            <span class="nav-item">LOCKER</span>
+        <div class="caja-amigos">
+            <h3>En Línea (3)</h3>
+            <hr style="border-color: #333;">
+            <p>1. Alonso XD</p>
+            <p>2. Amigo 1</p>
+            <p>3. Amigo 2</p>
         </div>
+    </div>
 
-        <div class="left-panel">
-            <div class="season-header">SEASON CIMA</div>
-            <div class="level-box">
-                <div class="icon-level">🧂</div>
-                <div class="level-info">
-                    <h2>LEVEL 1</h2>
-                    <p>0 / 1,000 XP</p>
-                    <div class="xp-bar"><div class="xp-fill"></div></div>
-                </div>
-            </div>
+    <div id="modal-servidores">
+        <div class="modal-content">
+            <h2 style="color: #00C853;">Servidores Disponibles</h2>
+            <div id="lista_servidores" style="margin-bottom: 20px;"></div>
+            <button onclick="juego.cerrarModal()" style="background: #ff4444; width: 100%;">CERRAR</button>
         </div>
+    </div>
 
-        <div class="right-server-panel">
-            <div class="server-options-box">
-                <h3>SERVER OPCIONES</h3>
-                <button class="btn-server" onclick="juego.abrirModal()">UNIRSE A SERVER</button>
-                <button class="btn-server" onclick="juego.crearServidorPublico()">CREAR SERVER: PÚBLICO</button>
+    <div id="hud_pantalla">
+        <div id="crosshair"></div>
+        <div id="ui">
+            <span style="color: #ff4444;">❤️ 100</span> | 
+            <span style="color: #ffffaa;">🔫 30/90</span> |
+            <span style="color: #00C853;">⏱️ 10:00</span>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <script>
+        const juego = {
+            scene: null, camera: null, renderer: null, clock: new THREE.Clock(),
+            playerModel: null, partidaActiva: false, 
+            stats: { nombre: "", genero: "hombre", kills: 0 },
+            teclas: {}, raycaster: new THREE.Raycaster(), 
+
+            servidoresActivos: [
+                { host: "CimaGod", mapa: "dia", jugadores: 3, max: 4 },
+                { host: "Bendy Ankles", mapa: "noche", jugadores: 1, max: 4 }
+            ],
+
+            velocidadY: 0,
+            gravedad: -0.012, 
+            enSuelo: false,
+            controls: null, 
+            murosDeColision: [], 
+
+            init: function() {
+                document.getElementById("btn_entrar_lobby").onclick = () => this.entrarAlLobby();
+                document.getElementById("btn_play_main").onclick = () => this.iniciarMatchmakingAutomatico();
                 
-                <div class="input-row">
-                    <label>Clima</label>
-                    <select id="sel-clima">
-                        <option value="dia">Día</option>
-                        <option value="atardecer">Atardecer</option>
-                        <option value="noche">Noche</option>
-                    </select>
-                </div>
+                window.onkeydown = (e) => this.teclas[e.code] = true;
+                window.onkeyup = (e) => this.teclas[e.code] = false;
+                window.onmousedown = () => { if(this.partidaActiva) this.disparar(); };
+            },
+
+            abrirModal: function() { 
+                const cont = document.getElementById("lista_servidores");
+                cont.innerHTML = "";
+                this.servidoresActivos.forEach((srv, i) => {
+                    cont.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px; align-items:center;">
+                        <span>${srv.host} - Mapa: ${srv.mapa} (${srv.jugadores}/${srv.max})</span>
+                        <button onclick="juego.unirseAServidor(${i})" style="background:#00ffaa; border:none; padding:5px; font-weight:bold; cursor:pointer;">UNIRSE</button>
+                    </div>`;
+                });
+                document.getElementById("modal-servidores").style.display = "flex"; 
+            },
+            cerrarModal: function() { document.getElementById("modal-servidores").style.display = "none"; },
+
+            entrarAlLobby: function() {
+                this.stats.nombre = document.getElementById("reg_nombre").value || "Soldado";
+                this.stats.genero = document.getElementById("reg-genero").value;
+                document.getElementById("display_nombre_user").innerText = this.stats.nombre;
+                document.getElementById("inicio_pantalla").style.display = "none";
+                document.getElementById("lobby_pantalla").style.display = "flex";
                 
-                <div class="input-row">
-                    <label>Código de sala</label>
-                    <input type="text" id="cod-privado">
-                </div>
+                this.crearEscena3D();
+            },
+
+            crearEscena3D: function() {
+                const container = document.getElementById("threejs_canvas");
+                container.innerHTML = ""; 
                 
-                <button class="btn-server" onclick="juego.crearServidorPrivado()">CREAR SERVIDOR PRIVADO</button>
-            </div>
-        </div>
+                this.scene = new THREE.Scene();
+                this.scene.background = null; 
+                
+                this.scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+                const luz = new THREE.DirectionalLight(0x00ffff, 1.5);
+                luz.position.set(2, 5, 5);
+                this.scene.add(luz);
 
-        <div class="bottom-right-play">
-            <div class="game-mode-box">
-                <p class="small-title">GAME MODE:</p>
-                <h2>SQUAD</h2>
-                <p style="margin:0; font-size:12px; color:#aaa;">(Public selected)</p>
-            </div>
-            <button class="btn-ready-giant" id="btn_play_main"><span class="btn-icon">P</span> READY</button>
-        </div>
+                this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.camera.position.set(0, 1.3, 3.5); 
 
-    </div>
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setClearColor( 0x000000, 0 ); 
+                container.appendChild(this.renderer.domElement);
+                
+                const circuloGeom = new THREE.RingGeometry(0.8, 1.2, 32);
+                const circuloMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
+                const plataforma = new THREE.Mesh(circuloGeom, circuloMat);
+                plataforma.rotation.x = Math.PI / 2;
+                plataforma.position.set(0, -0.3, 0); 
+                this.scene.add(plataforma);
 
-    <div id="modal-servidores" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 999; justify-content: center; align-items: center;">
-        <div style="background: #111; padding: 20px; border: 2px solid #fce100; width: 400px; color: white;">
-            <h2 style="font-family: 'Teko', sans-serif; font-size: 30px; margin-top: 0;">SERVIDORES ACTIVOS</h2>
-            <div id="lista_servidores" style="background: rgba(0,0,0,0.5); height: 150px; overflow-y: auto; padding: 10px; border: 1px solid #444;"></div>
-            <button onclick="juego.cerrarModal()" style="width: 100%; padding: 10px; background: #ff3333; color: white; border: none; margin-top: 10px; font-weight: bold; cursor: pointer;">CANCELAR</button>
-        </div>
-    </div>
+                const loader = new THREE.GLTFLoader();
+                
+                // ⚠️ ¡ATENCIÓN AQUÍ! PON TUS NOMBRES REALES DE GITHUB
+                // Si no tienes skin de mujer, pon el nombre de la skin de hombre en ambos.
+                const skinUrl = this.stats.genero === "hombre" ? "TU_SKIN_HOMBRE.glb" : "TU_SKIN_MUJER.glb";
+                
+                loader.load(skinUrl, (gltf) => {
+                    this.playerModel = gltf.scene;
+                    this.playerModel.position.set(0, -0.3, 0); 
+                    
+                    const box = new THREE.Box3().setFromObject(this.playerModel);
+                    const size = box.getSize(new THREE.Vector3()).length();
+                    if(size > 10) { this.playerModel.scale.set(0.01, 0.01, 0.01); } 
+                    else if(size < 0.5) { this.playerModel.scale.set(10, 10, 10); } 
 
-    <div id="hud_pantalla" class="pantalla-ui" style="display: none; pointer-events: none;">
-        <div id="crosshair" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: lime; font-size: 24px;">+</div>
-        <div id="timer_partida" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 30px; font-weight: bold; color: white; text-shadow: 2px 2px black;">10:00</div>
-    </div>
+                    this.scene.add(this.playerModel);
+                }, undefined, function(error){ console.error("Error cargando Skin:", error); });
 
-    <script src="index.js"></script>
+                this.loop();
+            },
+
+            iniciarMatchmakingAutomatico: function() { this.empezarPartida('dia'); },
+            unirseAServidor: function(index) { this.empezarPartida(this.servidoresActivos[index].mapa); },
+
+            empezarPartida: function(clima) {
+                this.cerrarModal();
+                document.getElementById("lobby_pantalla").style.display = "none";
+                document.getElementById("image-background").style.display = "none"; 
+                document.getElementById("hud_pantalla").style.display = "block";
+
+                this.partidaActiva = true;
+
+                if(clima === 'noche') this.scene.background = new THREE.Color(0x000005);
+                else if(clima === 'atardecer') this.scene.background = new THREE.Color(0x442200);
+                else this.scene.background = new THREE.Color(0x87ceeb); 
+                
+                this.controls = new THREE.PointerLockControls(this.camera, document.body);
+                this.scene.add(this.controls.getObject());
+                
+                document.body.onclick = () => {
+                    if(this.partidaActiva) this.controls.lock();
+                };
+
+                if(this.playerModel) this.scene.add(this.playerModel); 
+                
+                this.murosDeColision = [];
+                const loader = new THREE.GLTFLoader();
+                
+                // ⚠️ ¡ATENCIÓN AQUÍ! PON EL NOMBRE REAL DE TU MAPA EN GITHUB
+                loader.load("NOMBRE_DE_TU_MAPA.glb", (gltf) => {
+                    gltf.scene.traverse(child => {
+                        if (child.isMesh) {
+                            this.murosDeColision.push(child); 
+                        }
+                    });
+                    this.scene.add(gltf.scene);
+                    
+                    if(this.controls) this.controls.getObject().position.set(0, 1.6, -10); 
+                }, undefined, function(error){ console.error("Error cargando Mapa:", error); });
+            },
+
+            disparar: function() { console.log("PUM! Disparaste."); },
+
+            loop: function() {
+                requestAnimationFrame(() => this.loop());
+                
+                if(this.partidaActiva && this.controls && this.controls.isLocked) {
+                    const delta = this.clock.getDelta();
+                    const vel = this.teclas['ShiftLeft'] ? 0.3 : 0.15; 
+                    
+                    let dirFrontal = new THREE.Vector3();
+                    this.camera.getWorldDirection(dirFrontal);
+                    dirFrontal.y = 0; 
+                    dirFrontal.normalize();
+
+                    let dirLateral = new THREE.Vector3();
+                    dirLateral.crossVectors(this.camera.up, dirFrontal).normalize();
+
+                    const posActual = this.controls.getObject().position.clone();
+                    let posFutura = posActual.clone();
+
+                    if(this.teclas['KeyW']) posFutura.addScaledVector(dirFrontal, vel);
+                    if(this.teclas['KeyS']) posFutura.addScaledVector(dirFrontal, -vel);
+                    if(this.teclas['KeyA']) posFutura.addScaledVector(dirLateral, vel);
+                    if(this.teclas['KeyD']) posFutura.addScaledVector(dirLateral, -vel);
+
+                    const direccionCaminada = posFutura.clone().sub(posActual).normalize();
+                    if(direccionCaminada.length() > 0) {
+                        this.raycaster.set(posActual, direccionCaminada);
+                        const intercepciones = this.raycaster.intersectObjects(this.murosDeColision);
+                        if(intercepciones.length > 0 && intercepciones[0].distance < 1) {
+                            // Colisión detectada
+                        } else {
+                            this.controls.getObject().position.copy(posFutura);
+                        }
+                    }
+
+                    this.camera.position.y = 1.6; 
+                    
+                    if (this.playerModel) {
+                        this.playerModel.position.copy(this.controls.getObject().position);
+                        this.playerModel.position.y -= 1.6; 
+                        this.playerModel.rotation.y = this.controls.getObject().rotation.y; 
+                    }
+                    
+                } else if (this.playerModel && !this.partidaActiva) {
+                    this.playerModel.rotation.y += 0.002;
+                }
+
+                if(this.renderer) this.renderer.render(this.scene, this.camera);
+            }
+        };
+
+        window.onload = () => juego.init();
+    </script>
 </body>
 </html>
