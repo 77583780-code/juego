@@ -3,245 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shoot School - Epic Lobby</title>
+    <title>SHOOT SCHOOL - LOBBY OFICIAL</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Roboto:wght@400;700&display=swap');
+        /* ================= CSS: ESTILO DEL JUEGO ================= */
+        @import url('https://fonts.googleapis.com/css2?family=Jura:wght@500;700;900&display=swap');
 
-        /* CSS INTEGRADO - ESTILO FORTNITE */
-        body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; 
-            background-color: #000; font-family: 'Roboto', sans-serif; user-select: none; color: white;
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Jura', sans-serif; background: #050505; color: white; }
+
+        #canvas-3d { position: absolute; inset: 0; z-index: 1; }
+
+        /* PANTALLA DE INICIO */
+        #menu-inicio {
+            position: absolute; inset: 0; z-index: 20; display: flex; justify-content: center; align-items: center;
+            background: radial-gradient(circle, rgba(20,30,40,0.9) 0%, rgba(0,0,0,1) 100%);
         }
 
-        /* FONDO DEL JUEGO */
-        #fondo-imagen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('fondo.jpg'); /* AQUÍ CARGA TU IMAGEN */
-            background-size: cover; background-position: center; z-index: 1;
+        .panel-menu {
+            background: rgba(10, 15, 20, 0.8); border: 2px solid #00ffcc; border-radius: 10px;
+            padding: 40px; width: 350px; text-align: center; box-shadow: 0 0 30px rgba(0,255,204,0.3);
+            backdrop-filter: blur(5px);
         }
 
-        /* CONTENEDOR 3D PARA EL PERSONAJE */
-        #threejs_canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+        h1 { color: #00ffcc; font-size: 2.5rem; margin-top: 0; text-shadow: 0 0 10px #00ffcc; }
 
-        /* CAPA DE INTERFAZ (UI) */
-        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+        .input-form {
+            width: 90%; padding: 12px; margin: 10px 0; background: rgba(0,0,0,0.5);
+            border: 1px solid #555; color: white; font-size: 1.1rem; border-radius: 5px; text-align: center;
+        }
+        .input-form:focus { border-color: #00ffcc; outline: none; }
 
-        /* BARRA SUPERIOR */
-        .top-nav { display: flex; justify-content: center; gap: 30px; padding: 20px; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); pointer-events: auto; }
-        .nav-item { font-family: 'Teko', sans-serif; font-size: 1.5rem; color: #ccc; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
-        .nav-item.active { color: #fce300; border-bottom: 3px solid #fce300; }
+        .btn-entrar {
+            background: #00ffcc; color: black; border: none; width: 100%; padding: 15px;
+            font-size: 1.3rem; font-weight: 900; margin-top: 20px; cursor: pointer;
+            text-transform: uppercase; transition: 0.2s; border-radius: 5px;
+        }
+        .btn-entrar:hover { background: #00ccaa; box-shadow: 0 0 15px #00ffcc; transform: scale(1.05); }
 
-        /* CONTENEDOR CENTRAL (Paneles Laterales) */
-        .main-content { display: flex; justify-content: space-between; padding: 0 40px; height: 100%; align-items: center; pointer-events: none; }
+        /* HUD DEL LOBBY */
+        #hud-juego { display: none; position: absolute; inset: 0; z-index: 10; pointer-events: none; }
 
-        /* PANEL IZQUIERDO (Season / Perfil) */
-        .left-panel { background: rgba(22, 34, 56, 0.85); width: 300px; border: 2px solid #3c5478; border-radius: 5px; pointer-events: auto; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
-        .season-header { background: #5a82b5; padding: 10px; font-family: 'Teko', sans-serif; font-size: 2rem; margin: 0; text-shadow: 1px 1px 2px black; }
-        .profile-info { padding: 15px; border-bottom: 1px solid #3c5478; display: flex; align-items: center; gap: 15px; }
-        .shield-icon { font-size: 3rem; }
-        .level-text { font-family: 'Teko', sans-serif; font-size: 2.5rem; line-height: 1; }
-        .xp-bar { width: 100%; height: 10px; background: #222; margin-top: 5px; border-radius: 5px; overflow: hidden; }
-        .xp-fill { width: 60%; height: 100%; background: #00ffaa; }
-        .challenges { padding: 15px; font-size: 0.9rem; color: #aaa; }
-        .challenge-item { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .info-jugador {
+            position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.7);
+            padding: 15px 30px; border-left: 5px solid #00ffcc; border-radius: 0 10px 10px 0;
+        }
+        .info-jugador h2 { margin: 0; font-size: 1.8rem; color: #00ffcc; text-transform: uppercase; }
+        .info-jugador p { margin: 5px 0 0; color: #ccc; font-weight: bold; }
 
-        /* PANEL DERECHO (Squad / Ready) */
-        .right-panel { display: flex; flex-direction: column; gap: 20px; pointer-events: auto; width: 250px; }
-        .squad-list { text-align: right; }
-        .squad-member { margin-bottom: 15px; }
-        .squad-name { font-weight: bold; font-size: 1.1rem; text-shadow: 1px 1px 2px black; }
-        .squad-status { color: #ff4444; font-size: 0.9rem; text-transform: uppercase; }
-        .squad-status.ready { color: #00ffaa; }
+        /* SELECTOR DE SKINS */
+        .tienda-skins {
+            position: absolute; bottom: 30px; width: 100%;
+            display: flex; justify-content: center; gap: 15px; pointer-events: auto;
+        }
+
+        .btn-skin {
+            background: rgba(20,20,20,0.8); border: 2px solid #00ffcc; color: white;
+            padding: 12px 25px; font-size: 1rem; font-weight: bold; cursor: pointer;
+            transition: 0.3s; text-transform: uppercase; border-radius: 5px;
+        }
+        .btn-skin:hover { background: #00ffcc; color: black; transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,255,204,0.4); }
         
-        .ready-box { background: rgba(22, 34, 56, 0.85); padding: 15px; border: 2px solid #3c5478; text-align: center; }
-        .game-mode { font-family: 'Teko', sans-serif; font-size: 2rem; margin-bottom: 10px; }
-        .btn-ready { background: #fce300; color: #111; font-family: 'Teko', sans-serif; font-size: 2.5rem; width: 100%; border: none; padding: 10px; cursor: pointer; text-transform: uppercase; transition: 0.2s; box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2); }
-        .btn-ready:hover { background: #ffe600; transform: scale(1.02); }
-
-        /* BOTTOM HUD (El que ya tenías) */
-        .bottom-hud { display: flex; justify-content: space-between; align-items: flex-end; padding: 30px; pointer-events: auto; }
-        .chat-box { color: #00ffaa; font-family: monospace; font-size: 1rem; text-shadow: 1px 1px 2px black; }
-        #ui { background: rgba(22, 34, 56, 0.9); padding: 15px 25px; border-radius: 10px; border-left: 5px solid #00C853; display: flex; gap: 20px; font-size: 1.5rem; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        
-        /* IFRAME OCULTO PARA MÚSICA */
-        .musica-oculta { position: absolute; top: -9999px; left: -9999px; width: 1px; height: 1px; }
+        #mensaje-carga { 
+            position: absolute; top: 20px; right: 20px; color: #00ffcc; 
+            font-weight: bold; display: none; font-size: 1.2rem; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;
+        }
     </style>
 </head>
 <body>
 
-    <div id="fondo-imagen"></div>
+    <div id="canvas-3d"></div>
+    <div id="mensaje-carga">CARGANDO MODELO 3D...</div>
 
-    <div id="threejs_canvas"></div>
-
-    <div id="ui-layer">
-        <div class="top-nav">
-            <div class="nav-item active">Lobby</div>
-            <div class="nav-item">Pase de Batalla</div>
-            <div class="nav-item">Taquilla</div>
-            <div class="nav-item">Tienda</div>
-            <div class="nav-item">Perfil</div>
-        </div>
-
-        <div class="main-content">
-            <div class="left-panel">
-                <h2 class="season-header">SEASON 2</h2>
-                <div class="profile-info">
-                    <div class="shield-icon">🛡️</div>
-                    <div>
-                        <div class="level-text">LEVEL 41</div>
-                        <div class="xp-bar"><div class="xp-fill"></div></div>
-                    </div>
-                </div>
-                <div class="challenges">
-                    <h3 style="color: white; margin-top: 0;">DAILY CHALLENGES</h3>
-                    <div class="challenge-item"><span>Sobrevive 5 minutos</span> <span>0 / 5</span></div>
-                    <div class="challenge-item"><span>Eliminaciones con Rifle</span> <span>0 / 5</span></div>
-                    <div class="challenge-item"><span>Juega partidas (Squad)</span> <span>0 / 6</span></div>
-                </div>
-            </div>
-
-            <div class="right-panel">
-                <div class="squad-list">
-                    <div class="squad-member">
-                        <div class="squad-name">Tú (Líder)</div>
-                        <div class="squad-status ready">Ready</div>
-                    </div>
-                    <div class="squad-member">
-                        <div class="squad-name">Bendy Ankles</div>
-                        <div class="squad-status">Not Ready</div>
-                    </div>
-                    <div class="squad-member">
-                        <div class="squad-name">CimaGod</div>
-                        <div class="squad-status ready">Ready</div>
-                    </div>
-                </div>
-
-                <div class="ready-box">
-                    <div class="game-mode">SQUAD</div>
-                    <button class="btn-ready" onclick="iniciarJuego()">¡JUGAR!</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="bottom-hud">
-            <div class="chat-box">
-                [Lobby] Bendy Ankles se unió al grupo.<br>
-                [Lobby] CimaGod está listo.
-            </div>
-            <div id="ui">
-                <span style="color: #ff4444;">❤️ 100</span> | 
-                <span style="color: #ffffaa;">🔫 30/90</span> |
-                <span style="color: #00C853;">⏱️ 10:00</span>
-            </div>
+    <div id="menu-inicio">
+        <div class="panel-menu">
+            <h1>SHOOT SCHOOL</h1>
+            <input type="text" id="nombre" class="input-form" placeholder="TU NICKNAME" required>
+            <input type="number" id="edad" class="input-form" placeholder="TU EDAD" min="10" required>
+            <select id="genero" class="input-form">
+                <option value="H">GÉNERO: HOMBRE</option>
+                <option value="M">GÉNERO: MUJER</option>
+            </select>
+            <button class="btn-entrar" onclick="iniciar()">CONECTAR AL LOBBY</button>
         </div>
     </div>
 
-    <iframe class="musica-oculta" src="https://www.youtube.com/embed/FK_JEt8txRE?autoplay=1&loop=1&playlist=FK_JEt8txRE" allow="autoplay"></iframe>
+    <div id="hud-juego">
+        <div class="info-jugador">
+            <h2 id="hud-nick">JUGADOR</h2>
+            <p id="hud-nivel">NIVEL: 0</p>
+        </div>
+        
+        <div class="tienda-skins" id="caja-skins">
+            <button class="btn-skin" onclick="cargarPersonaje('CT.glb')">CT URBAN</button>
+            <button class="btn-skin" onclick="cargarPersonaje('Lara.glb')">LARA</button>
+            <button class="btn-skin" onclick="cargarPersonaje('Renegade.glb')">RENEGADE</button>
+            <button class="btn-skin" onclick="cargarPersonaje('Phoenix.glb')">PHOENIX</button>
+        </div>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
-        // CONFIGURACIÓN DEL LOBBY 3D
-        const scene = new THREE.Scene();
-        
-        // Hacemos el fondo transparente para que se vea tu imagen "fondo.jpg" de CSS
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('threejs_canvas').appendChild(renderer.domElement);
-
-        // LUCES PARA QUE TU MODELO SE VEA BIEN ÉPICO
-        const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(luzAmbiente);
-        
-        const luzDireccional = new THREE.DirectionalLight(0x00ffff, 1.5);
-        luzDireccional.position.set(5, 10, 5);
-        scene.add(luzDireccional);
-
-        // CREAR LA PLATAFORMA DE LUZ (Estilo Fortnite)
-        const geometriaPlataforma = new THREE.CylinderGeometry(1.5, 1.8, 0.1, 32);
-        const materialPlataforma = new THREE.MeshStandardMaterial({ 
-            color: 0x00ffff, 
-            emissive: 0x0088ff, 
-            transparent: true, 
-            opacity: 0.8 
-        });
-        const plataforma = new THREE.Mesh(geometriaPlataforma, materialPlataforma);
-        plataforma.position.set(0, -1, 0);
-        scene.add(plataforma);
-
-        // AROS DE NEÓN ALREDEDOR DE LA PLATAFORMA
-        const geometriaAro = new THREE.RingGeometry(1.6, 1.8, 32);
-        const materialAro = new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide });
-        const aro = new THREE.Mesh(geometriaAro, materialAro);
-        aro.rotation.x = Math.PI / 2;
-        aro.position.set(0, -0.9, 0);
-        scene.add(aro);
-
-        // CARGAR TU MODELO 3D (.GLB)
         const loader = new THREE.GLTFLoader();
-        let personajeLobby;
+        let scene, camera, renderer, personajeActual;
 
-        // 👇👇 AQUÍ ESTÁ BUSCANDO TU ARCHIVO "mi_modelo.glb" 👇👇
-        loader.load('mi_modelo.glb', function (gltf) {
-            personajeLobby = gltf.scene;
+        function iniciar() {
+            const nombre = document.getElementById('nombre').value;
+            const edad = document.getElementById('edad').value;
+            const genero = document.getElementById('genero').value;
+
+            if(!nombre || !edad) {
+                alert("⚠️ TIENES QUE LLENAR TUS DATOS SOLDADO.");
+                return;
+            }
+
+            // Cambiar pantallas
+            document.getElementById('menu-inicio').style.display = 'none';
+            document.getElementById('hud-juego').style.display = 'block';
+            document.getElementById('hud-nick').innerText = nombre;
+            document.getElementById('hud-nivel').innerText = `NIVEL: ${edad}`;
+
+            // Iniciar 3D
+            iniciarMotor();
+            cargarEntorno();
             
-            // Ajustar posición para que quede parado en la plataforma
-            personajeLobby.position.set(0, -1, 0); 
+            // Cargar skin inicial según género
+            if(genero === "H") {
+                cargarPersonaje('CT.glb');
+            } else {
+                cargarPersonaje('Lara.glb');
+            }
+        }
+
+        function iniciarMotor() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
             
-            // Ajuste automático de tamaño (por si tu modelo es muy grande o muy chico)
-            const caja = new THREE.Box3().setFromObject(personajeLobby);
-            const centro = caja.getCenter(new THREE.Vector3());
-            const tamaño = caja.getSize(new THREE.Vector3());
-            const maxDim = Math.max(tamaño.x, tamaño.y, tamaño.z);
-            const escala = 3.5 / maxDim; // Escala ideal para la pantalla
-            personajeLobby.scale.set(escala, escala, escala);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            // Mejorar texturas
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+            
+            document.getElementById('canvas-3d').appendChild(renderer.domElement);
+            
+            // Luces para que los personajes se vean en HD
+            const ambient = new THREE.AmbientLight(0xffffff, 1.2);
+            scene.add(ambient);
+            
+            const luzDir = new THREE.DirectionalLight(0xffffff, 1.5);
+            luzDir.position.set(2, 5, 5);
+            scene.add(luzDir);
 
-            scene.add(personajeLobby);
-        }, undefined, function (error) {
-            console.warn('Cargando placeholder. Sube tu archivo "mi_modelo.glb" para verlo aquí.');
-            // Si no encuentra tu modelo, dibuja un muñeco temporal para que no veas pantalla blanca
-            const tempGeo = new THREE.BoxGeometry(0.8, 2, 0.8);
-            const tempMat = new THREE.MeshStandardMaterial({color: 0xffffff});
-            personajeLobby = new THREE.Mesh(tempGeo, tempMat);
-            personajeLobby.position.set(0, 0, 0);
-            scene.add(personajeLobby);
-        });
+            const luzEspalda = new THREE.DirectionalLight(0x00ffcc, 0.5);
+            luzEspalda.position.set(-2, 2, -5);
+            scene.add(luzEspalda);
+            
+            camera.position.set(0, 1.2, 4.5); // Cámara ajustada
+            animate();
+        }
 
-        // POSICIÓN DE LA CÁMARA (Mirando al centro de la plataforma)
-        camera.position.set(0, 0.5, 6);
-        camera.lookAt(0, 0.5, 0);
+        function cargarEntorno() {
+            document.getElementById('mensaje-carga').style.display = 'block';
+            // Carga exactamente el archivo de tu GitHub
+            loader.load('Lobby.glb', (gltf) => {
+                let lobby = gltf.scene;
+                lobby.scale.set(1.5, 1.5, 1.5); // Tamaño del lobby
+                lobby.position.set(0, -1, -3); // Posición hacia atrás
+                scene.add(lobby);
+                document.getElementById('mensaje-carga').style.display = 'none';
+            }, undefined, (e) => {
+                console.error("Error cargando Lobby:", e);
+                document.getElementById('mensaje-carga').style.display = 'none';
+            });
+        }
 
-        // BUCLE DE ANIMACIÓN
+        function cargarPersonaje(archivo) {
+            document.getElementById('mensaje-carga').style.display = 'block';
+            document.getElementById('mensaje-carga').innerText = "CARGANDO SKIN...";
+            
+            if (personajeActual) scene.remove(personajeActual);
+            
+            // Carga exactamente los archivos de tu GitHub
+            loader.load(archivo, (gltf) => {
+                personajeActual = gltf.scene;
+                
+                // ESTA ES LA MAGIA QUE ARREGLA EL TAMAÑO DE LAS SKINS
+                const box = new THREE.Box3().setFromObject(personajeActual);
+                const size = box.getSize(new THREE.Vector3());
+                const center = box.getCenter(new THREE.Vector3());
+                
+                const scale = 2.2 / size.y; // Fuerza a todos a medir 2.2
+                personajeActual.scale.set(scale, scale, scale);
+                
+                // Los centra en la pantalla
+                personajeActual.position.x = -(center.x * scale);
+                personajeActual.position.y = -(box.min.y * scale) - 1.2; 
+                personajeActual.position.z = 0; // Frente a la cámara
+                
+                scene.add(personajeActual);
+                document.getElementById('mensaje-carga').style.display = 'none';
+            }, undefined, (e) => {
+                console.error("Error cargando el personaje:", e);
+                document.getElementById('mensaje-carga').innerText = "ERROR AL CARGAR SKIN";
+                setTimeout(() => document.getElementById('mensaje-carga').style.display = 'none', 3000);
+            });
+        }
+
         function animate() {
             requestAnimationFrame(animate);
-            
-            // Rotación épica muy lenta del personaje en el lobby
-            if (personajeLobby) {
-                personajeLobby.rotation.y += 0.005;
-            }
-            // Rotación del aro de luz
-            aro.rotation.z += 0.01;
-
+            // Hace que la skin gire lentamente
+            if (personajeActual) personajeActual.rotation.y += 0.005; 
             renderer.render(scene, camera);
         }
-        animate();
 
-        // AJUSTAR PANTALLA SI CAMBIAS EL TAMAÑO DE LA VENTANA
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // FUNCIÓN DEL BOTÓN JUGAR
-        function iniciarJuego() {
-            alert("¡Cargando el mapa de juego! (Aquí conectaremos la lógica de disparos más adelante)");
-            // Para que la música arranque si el navegador la bloqueó por el autoplay
-            document.querySelector('.musica-oculta').src += "&autoplay=1";
-        }
+        // Ajusta la pantalla si cambias el tamaño de la ventana
+        window.onresize = () => {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        };
     </script>
 </body>
 </html>
