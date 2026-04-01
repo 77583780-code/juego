@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHOOT SCHOOL - LIQUID LOBBY</title>
+    <title>SHOOT SCHOOL - LIQUID LOBBY FIX</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700&family=Jura:wght@700&display=swap" rel="stylesheet">
     
     <style>
         /* ============================================================
-           CSS: FRUTIGER AERO LIQUID GLASS (Totalmente Renovado)
+           CSS: FRUTIGER AERO LIQUID GLASS (Mismo estilo anterior, ¡NO TOCAR!)
            ============================================================ */
         :root {
             --aqua: #00e5ff;
@@ -22,11 +22,9 @@
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
             overflow: hidden; font-family: 'Quicksand', sans-serif;
-            /* Fondo base agua aqua */
             background: radial-gradient(circle at center, #00bfff 0%, #0044cc 70%, #001144 100%);
         }
 
-        /* Superposición de Burbujas Frutiger (De fondo en toda la web) */
         body::after {
             content: ''; position: absolute; inset: 0;
             background-image: 
@@ -36,24 +34,20 @@
             z-index: 1; pointer-events: none;
         }
 
-        /* FONDO DE YOUTUBE (Brillo bajado para resaltar el vidrio) */
         .video-bg { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0.4; }
         .video-bg iframe {
             width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.77vh;
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         }
 
-        /* CONTENEDOR MOTOR 3D (Z-index alto para estar "detrás" de las burbujas finales pero "delante" del video) */
         #canvas-3d { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
 
-        /* Capa final de "vidrio húmedo" sobre todo */
         #liquid-overlay {
             position: absolute; inset: 0; z-index: 30;
             background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(0,229,255,0.05) 50%, rgba(0,85,255,0.1) 100%);
             pointer-events: none;
         }
 
-        /* --- CLASE MAESTRA: VIDRIO LÍQUIDO (Liquid Glass) --- */
         .liquid-card {
             background: var(--glass-bg);
             border: 3px solid var(--glass-br);
@@ -67,14 +61,12 @@
             transition: 0.3s;
         }
 
-        /* Brillo Glossy Superior de la clase maestra */
         .liquid-card::before {
             content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 50%;
             background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 100%);
             border-radius: 35px 35px 0 0; pointer-events: none;
         }
 
-        /* BOTONES FRUTIGER AQUA (Glossy + Pulidos) */
         .btn-aqua {
             background: linear-gradient(180deg, #77eeff 0%, #00bbff 40%, #0088ff 50%, #0066ee 100%);
             color: white; border: 3px solid rgba(255,255,255,0.8);
@@ -87,7 +79,6 @@
         .btn-aqua:hover { transform: translateY(-3px) scale(1.02); filter: brightness(1.1); }
         .btn-aqua:active { transform: translateY(2px); box-shadow: 0 3px 5px rgba(0,85,255,0.3); }
 
-        /* INPUTS Y SELECTS VIDRIO (Estilo Frutiger Captura) */
         .input-glass {
             width: 90%; padding: 12px; margin: 8px 0; border-radius: 15px;
             background: rgba(255,255,255,0.85);
@@ -96,9 +87,6 @@
             outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* ============================================================
-           SECCIONES DE INTERFAZ (UI)
-           ============================================================ */
         .ui-screen {
             position: absolute; inset: 0; z-index: 20;
             display: none; justify-content: center; align-items: center;
@@ -106,39 +94,29 @@
         }
         .active-screen { display: flex; opacity: 1; }
 
-        /* TITULOS GLOSSY */
         h1 { margin: 0; font-family: 'Jura', sans-serif; font-size: 3rem; background: linear-gradient(to bottom, #77eeff, #0055ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 15px rgba(0,229,255,0.5); }
         h2 { margin: 10px 0; color: #fff; font-size: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         h3 { color: #00e5ff; font-family: 'Jura', sans-serif; margin: 0 0 5px; }
 
-        /* --- 1. PANTALLA REGISTRO --- */
         #scr-reg .liquid-card { padding: 40px; width: 380px; text-align: center; }
 
-        /* --- 2. PANTALLA SELECCIÓN SKIN --- */
-        #scr-skin .skin-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 80%; max-width: 900px; }
+        #scr-skin .skin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 90%; max-width: 1000px; }
         .skin-option {
             background: rgba(255,255,255,0.3); border: 4px solid #fff; border-radius: 25px;
             padding: 20px; text-align: center; cursor: pointer; transition: 0.3s;
             backdrop-filter: blur(5px); position: relative; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
         }
         .skin-option::before { content: ''; position: absolute; inset: 0; background: var(--gloss); opacity: 0.3; }
         .skin-option:hover { transform: scale(1.05); border-color: var(--aqua); background: rgba(0,229,255,0.2); box-shadow: 0 0 30px rgba(0,229,255,0.5); }
-        .skin-option img { width: 100%; max-height: 250px; object-fit: contain; position: relative; z-index: 5; }
-        .skin-option h3 { position: relative; z-index: 5; margin-top: 10px; }
+        
+        .skin-placeholder { height: 200px; display:flex; align-items:center; justify-content:center; color: #fff; font-size: 1.2rem; font-weight: bold; text-shadow: 0 2px 4px #000; position: relative; z-index: 5;}
+        .skin-option h3 { position: relative; z-index: 5; margin-top: 10px; font-size: 1.2rem; }
 
-        /* --- 3. LOBBY OFICIAL (HUD FINAL) --- */
         #scr-lobby { position: absolute; inset: 0; z-index: 15; pointer-events: none; display: none; }
-        
-        /* Info Jugador */
         .player-info { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.8); border: 2px solid #fff; padding: 10px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        
-        /* Menú Superior (Tienda, Pases, etc.) */
         #top-bar { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; pointer-events: auto; }
-        
-        /* Panel Servidores (Derecha) */
         .server-panel { position: absolute; top: 120px; right: 20px; width: 280px; text-align: center; padding: 20px; pointer-events: auto; }
-        
-        /* Botón JUGAR (Glossy + Fuego) */
         .btn-play {
             position: absolute; bottom: 30px; right: 30px; pointer-events: auto;
             background: linear-gradient(to bottom, #ffea00, #ff8800 50%, #cc3300 100%);
@@ -148,11 +126,7 @@
             text-transform: uppercase; transition: 0.1s;
         }
         .btn-play:active { transform: translateY(8px); box-shadow: 0 0px 0 #aa2200; }
-
-        /* Pastillas Cambio Skin Rápido */
         #shop-pills { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; pointer-events: auto; }
-
-        /* Estilos de botones pequeños y selects en Lobby */
         .btn-nav { background: #fff; color: #0055ff; border: 2px solid #fff; border-radius: 10px; padding: 8px 15px; font-weight: bold; cursor: pointer; }
         .btn-nav:hover { background: #0055ff; color: #fff; }
         .btn-serv { background: rgba(0,0,0,0.7); color: #00e5ff; border: 1px solid #00e5ff; padding: 10px; border-radius: 5px; width: 100%; margin: 5px 0; cursor: pointer; }
@@ -186,8 +160,8 @@
     <div class="ui-screen" id="scr-skin">
         <div class="liquid-card" style="padding: 20px; text-align: center;">
             <h1 style="font-size: 2rem;">ELIGE TU SKIN INICIAL</h1>
-            <p style="color: #fff; font-weight: bold;">(Haz clic en tu preferida para entrar al lobby)</p>
-            <div class="skin-grid">
+            <p style="color: #fff; font-weight: bold;">(Tus 3 modelos exclusivos te esperan)</p>
+            <div class="skin-grid" id="skin-options-container">
                 </div>
         </div>
     </div>
@@ -195,16 +169,14 @@
     <div id="scr-lobby">
         <div class="player-info">
             <h3 id="hud-nick">SOLDIER</h3>
-            <p style="margin: 0; color: #0055ff; font-weight: bold;">NIVEL 1</p>
+            <p id="hud-lv" style="margin: 0; color: #0055ff; font-weight: bold;">NIVEL 1</p>
         </div>
-
         <div id="top-bar">
             <button class="btn-nav">TIENDA</button>
             <button class="btn-nav">PASES DE BATALLA</button>
             <button class="btn-nav">CASILLERO</button>
             <button class="btn-nav">PERFIL</button>
         </div>
-
         <div class="server-panel liquid-card">
             <h3>SERVIDOR OPCIONES</h3>
             <select class="select-serv">
@@ -215,10 +187,8 @@
             <button class="btn-serv" onclick="alert('Buscando Servidor...')">BUSCAR SERVER</button>
             <button class="btn-serv">CREAR SERVER PRIVADO</button>
         </div>
-
         <div id="shop-pills">
             <button class="btn-nav" style="border: 2px solid #00e5ff; background: rgba(0,0,0,0.5); color: #00e5ff;" onclick="alert('Pronto: Tienda de Skins Líquidas!')">TIENDA</button>
         </div>
-
         <button class="btn-play" onclick="alert('¡Soldado, no hay partidas online todavía!')">¡JUGAR!</button>
     </div>
