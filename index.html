@@ -3,198 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shoot School - Final</title>
+    <title>Shoot School - Epic Lobby</title>
     <style>
-        /* CSS TOTALMENTE INTEGRADO */
-        body { margin: 0; overflow: hidden; background-color: #0d1117; color: white; font-family: 'Segoe UI', sans-serif; user-select: none; }
-        #image-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Roboto:wght@400;700&display=swap');
+
+        /* CSS INTEGRADO - ESTILO FORTNITE */
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; 
+            background-color: #000; font-family: 'Roboto', sans-serif; user-select: none; color: white;
+        }
+
+        /* FONDO DEL JUEGO */
+        #fondo-imagen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('fondo.jpg'); /* AQUÍ CARGA TU IMAGEN */
+            background-size: cover; background-position: center; z-index: 1;
+        }
+
+        /* CONTENEDOR 3D PARA EL PERSONAJE */
+        #threejs_canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+
+        /* CAPA DE INTERFAZ (UI) */
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+
+        /* BARRA SUPERIOR */
+        .top-nav { display: flex; justify-content: center; gap: 30px; padding: 20px; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); pointer-events: auto; }
+        .nav-item { font-family: 'Teko', sans-serif; font-size: 1.5rem; color: #ccc; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        .nav-item.active { color: #fce300; border-bottom: 3px solid #fce300; }
+
+        /* CONTENEDOR CENTRAL (Paneles Laterales) */
+        .main-content { display: flex; justify-content: space-between; padding: 0 40px; height: 100%; align-items: center; pointer-events: none; }
+
+        /* PANEL IZQUIERDO (Season / Perfil) */
+        .left-panel { background: rgba(22, 34, 56, 0.85); width: 300px; border: 2px solid #3c5478; border-radius: 5px; pointer-events: auto; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        .season-header { background: #5a82b5; padding: 10px; font-family: 'Teko', sans-serif; font-size: 2rem; margin: 0; text-shadow: 1px 1px 2px black; }
+        .profile-info { padding: 15px; border-bottom: 1px solid #3c5478; display: flex; align-items: center; gap: 15px; }
+        .shield-icon { font-size: 3rem; }
+        .level-text { font-family: 'Teko', sans-serif; font-size: 2.5rem; line-height: 1; }
+        .xp-bar { width: 100%; height: 10px; background: #222; margin-top: 5px; border-radius: 5px; overflow: hidden; }
+        .xp-fill { width: 60%; height: 100%; background: #00ffaa; }
+        .challenges { padding: 15px; font-size: 0.9rem; color: #aaa; }
+        .challenge-item { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+
+        /* PANEL DERECHO (Squad / Ready) */
+        .right-panel { display: flex; flex-direction: column; gap: 20px; pointer-events: auto; width: 250px; }
+        .squad-list { text-align: right; }
+        .squad-member { margin-bottom: 15px; }
+        .squad-name { font-weight: bold; font-size: 1.1rem; text-shadow: 1px 1px 2px black; }
+        .squad-status { color: #ff4444; font-size: 0.9rem; text-transform: uppercase; }
+        .squad-status.ready { color: #00ffaa; }
         
-        #inicio_pantalla, #lobby_pantalla { position: absolute; z-index: 10; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); }
-        #lobby_pantalla { display: none; justify-content: flex-start; padding-top: 50px; background: transparent; pointer-events: none; }
+        .ready-box { background: rgba(22, 34, 56, 0.85); padding: 15px; border: 2px solid #3c5478; text-align: center; }
+        .game-mode { font-family: 'Teko', sans-serif; font-size: 2rem; margin-bottom: 10px; }
+        .btn-ready { background: #fce300; color: #111; font-family: 'Teko', sans-serif; font-size: 2.5rem; width: 100%; border: none; padding: 10px; cursor: pointer; text-transform: uppercase; transition: 0.2s; box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2); }
+        .btn-ready:hover { background: #ffe600; transform: scale(1.02); }
+
+        /* BOTTOM HUD (El que ya tenías) */
+        .bottom-hud { display: flex; justify-content: space-between; align-items: flex-end; padding: 30px; pointer-events: auto; }
+        .chat-box { color: #00ffaa; font-family: monospace; font-size: 1rem; text-shadow: 1px 1px 2px black; }
+        #ui { background: rgba(22, 34, 56, 0.9); padding: 15px 25px; border-radius: 10px; border-left: 5px solid #00C853; display: flex; gap: 20px; font-size: 1.5rem; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         
-        #hud_pantalla { display: none; position: absolute; z-index: 100; width: 100%; height: 100%; pointer-events: none; }
-        #crosshair { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); }
-        #crosshair::before, #crosshair::after { content: ''; position: absolute; background: #00FF00; box-shadow: 0 0 5px rgba(0, 255, 0, 0.8); }
-        #crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; }
-        #crosshair::after { top: 0; left: 9px; width: 2px; height: 20px; }
-        
-        #ui { position: absolute; bottom: 30px; left: 30px; background: rgba(0, 0, 0, 0.5); padding: 15px 25px; border-radius: 10px; border-left: 5px solid #00C853; display: flex; gap: 20px; font-size: 1.5rem; font-weight: bold; }
-        
-        .caja-login { background: #161b22; padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #30363d; pointer-events: auto; }
-        input, select, button { margin: 10px; padding: 10px; font-size: 1.2rem; border-radius: 5px; border: 1px solid #555; background: #222; color: white; }
-        button { background: #00C853; color: black; font-weight: bold; cursor: pointer; border: none; }
-        button:hover { background: #00e676; transform: scale(1.05); }
-        
-        .menu-top { position: absolute; top: 20px; display: flex; gap: 20px; pointer-events: auto; }
-        .caja-amigos { position: absolute; left: 20px; top: 100px; background: rgba(22, 27, 34, 0.9); padding: 20px; border-radius: 10px; width: 250px; pointer-events: auto; }
-        
-        #modal-servidores { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; pointer-events: auto;}
-        .modal-content { background: #161b22; padding: 30px; border-radius: 10px; width: 400px; border: 1px solid #00C853; }
-        
-        #threejs_canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+        /* IFRAME OCULTO PARA MÚSICA */
+        .musica-oculta { position: absolute; top: -9999px; left: -9999px; width: 1px; height: 1px; }
     </style>
 </head>
 <body>
 
-    <img id="image-background" src="https://images.unsplash.com/photo-1542382257-80da9fb9f5c5?q=80&w=1920&auto=format&fit=crop" alt="Fondo">
+    <div id="fondo-imagen"></div>
 
     <div id="threejs_canvas"></div>
 
-    <div id="inicio_pantalla">
-        <div class="caja-login">
-            <h1 style="color: #00C853; font-size: 3rem; margin-top: 0;">SHOOT SCHOOL</h1>
-            <p>Ingresa tu nombre de soldado:</p>
-            <input type="text" id="reg_nombre" placeholder="Ej: Alonso XD">
-            <br>
-            <select id="reg-genero">
-                <option value="hombre">Personaje: Hombre</option>
-                <option value="mujer">Personaje: Mujer</option>
-            </select>
-            <br><br>
-            <button id="btn_entrar_lobby">ENTRAR AL LOBBY</button>
+    <div id="ui-layer">
+        <div class="top-nav">
+            <div class="nav-item active">Lobby</div>
+            <div class="nav-item">Pase de Batalla</div>
+            <div class="nav-item">Taquilla</div>
+            <div class="nav-item">Tienda</div>
+            <div class="nav-item">Perfil</div>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <h2 class="season-header">SEASON 2</h2>
+                <div class="profile-info">
+                    <div class="shield-icon">🛡️</div>
+                    <div>
+                        <div class="level-text">LEVEL 41</div>
+                        <div class="xp-bar"><div class="xp-fill"></div></div>
+                    </div>
+                </div>
+                <div class="challenges">
+                    <h3 style="color: white; margin-top: 0;">DAILY CHALLENGES</h3>
+                    <div class="challenge-item"><span>Sobrevive 5 minutos</span> <span>0 / 5</span></div>
+                    <div class="challenge-item"><span>Eliminaciones con Rifle</span> <span>0 / 5</span></div>
+                    <div class="challenge-item"><span>Juega partidas (Squad)</span> <span>0 / 6</span></div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="squad-list">
+                    <div class="squad-member">
+                        <div class="squad-name">Tú (Líder)</div>
+                        <div class="squad-status ready">Ready</div>
+                    </div>
+                    <div class="squad-member">
+                        <div class="squad-name">Bendy Ankles</div>
+                        <div class="squad-status">Not Ready</div>
+                    </div>
+                    <div class="squad-member">
+                        <div class="squad-name">CimaGod</div>
+                        <div class="squad-status ready">Ready</div>
+                    </div>
+                </div>
+
+                <div class="ready-box">
+                    <div class="game-mode">SQUAD</div>
+                    <button class="btn-ready" onclick="iniciarJuego()">¡JUGAR!</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-hud">
+            <div class="chat-box">
+                [Lobby] Bendy Ankles se unió al grupo.<br>
+                [Lobby] CimaGod está listo.
+            </div>
+            <div id="ui">
+                <span style="color: #ff4444;">❤️ 100</span> | 
+                <span style="color: #ffffaa;">🔫 30/90</span> |
+                <span style="color: #00C853;">⏱️ 10:00</span>
+            </div>
         </div>
     </div>
 
-    <div id="lobby_pantalla">
-        <div class="menu-top">
-            <button id="btn_play_main" style="font-size: 1.5rem; padding: 15px 40px;">JUGAR RÁPIDO</button>
-            <button onclick="juego.abrirModal()">VER SERVIDORES</button>
-            <span id="display_nombre_user" style="font-size: 1.5rem; margin-top: 15px; color: #00C853;">User</span>
-        </div>
-
-        <div class="caja-amigos">
-            <h3>En Línea (3)</h3>
-            <hr style="border-color: #333;">
-            <p>1. Alonso XD</p>
-            <p>2. CimaGod</p>
-            <p>3. Bendy Ankles</p>
-        </div>
-    </div>
-
-    <div id="modal-servidores">
-        <div class="modal-content">
-            <h2 style="color: #00C853;">Servidores Disponibles</h2>
-            <div id="lista_servidores" style="margin-bottom: 20px;"></div>
-            <button onclick="juego.cerrarModal()" style="background: #ff4444; width: 100%;">CERRAR</button>
-        </div>
-    </div>
-
-    <div id="hud_pantalla">
-        <div id="crosshair"></div>
-        <div id="ui">
-            <span style="color: #ff4444;">❤️ 100</span> | 
-            <span style="color: #ffffaa;">🔫 30/90</span> |
-            <span style="color: #00C853;">⏱️ 10:00</span>
-        </div>
-    </div>
+    <iframe class="musica-oculta" src="https://www.youtube.com/embed/FK_JEt8txRE?autoplay=1&loop=1&playlist=FK_JEt8txRE" allow="autoplay"></iframe>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
-        const juego = {
-            scene: null, camera: null, renderer: null, clock: new THREE.Clock(),
-            playerModel: null, partidaActiva: false, 
-            stats: { nombre: "", genero: "hombre", kills: 0 },
-            teclas: {}, raycaster: new THREE.Raycaster(), 
+        // CONFIGURACIÓN DEL LOBBY 3D
+        const scene = new THREE.Scene();
+        
+        // Hacemos el fondo transparente para que se vea tu imagen "fondo.jpg" de CSS
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('threejs_canvas').appendChild(renderer.domElement);
 
-            servidoresActivos: [
-                { host: "CimaGod", mapa: "dia", jugadores: 3, max: 4 },
-                { host: "Bendy Ankles", mapa: "noche", jugadores: 1, max: 4 }
-            ],
+        // LUCES PARA QUE TU MODELO SE VEA BIEN ÉPICO
+        const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(luzAmbiente);
+        
+        const luzDireccional = new THREE.DirectionalLight(0x00ffff, 1.5);
+        luzDireccional.position.set(5, 10, 5);
+        scene.add(luzDireccional);
 
-            controls: null, 
-            murosDeColision: [], 
+        // CREAR LA PLATAFORMA DE LUZ (Estilo Fortnite)
+        const geometriaPlataforma = new THREE.CylinderGeometry(1.5, 1.8, 0.1, 32);
+        const materialPlataforma = new THREE.MeshStandardMaterial({ 
+            color: 0x00ffff, 
+            emissive: 0x0088ff, 
+            transparent: true, 
+            opacity: 0.8 
+        });
+        const plataforma = new THREE.Mesh(geometriaPlataforma, materialPlataforma);
+        plataforma.position.set(0, -1, 0);
+        scene.add(plataforma);
 
-            init: function() {
-                document.getElementById("btn_entrar_lobby").onclick = () => this.entrarAlLobby();
-                document.getElementById("btn_play_main").onclick = () => this.iniciarMatchmakingAutomatico();
-                
-                window.onkeydown = (e) => this.teclas[e.code] = true;
-                window.onkeyup = (e) => this.teclas[e.code] = false;
-                window.onmousedown = () => { if(this.partidaActiva) this.disparar(); };
-            },
+        // AROS DE NEÓN ALREDEDOR DE LA PLATAFORMA
+        const geometriaAro = new THREE.RingGeometry(1.6, 1.8, 32);
+        const materialAro = new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide });
+        const aro = new THREE.Mesh(geometriaAro, materialAro);
+        aro.rotation.x = Math.PI / 2;
+        aro.position.set(0, -0.9, 0);
+        scene.add(aro);
 
-            abrirModal: function() { 
-                const cont = document.getElementById("lista_servidores");
-                cont.innerHTML = "";
-                this.servidoresActivos.forEach((srv, i) => {
-                    cont.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px; align-items:center;">
-                        <span>${srv.host} - Mapa: ${srv.mapa} (${srv.jugadores}/${srv.max})</span>
-                        <button onclick="juego.unirseAServidor(${i})" style="background:#00ffaa; border:none; padding:5px; font-weight:bold; cursor:pointer;">UNIRSE</button>
-                    </div>`;
-                });
-                document.getElementById("modal-servidores").style.display = "flex"; 
-            },
-            cerrarModal: function() { document.getElementById("modal-servidores").style.display = "none"; },
+        // CARGAR TU MODELO 3D (.GLB)
+        const loader = new THREE.GLTFLoader();
+        let personajeLobby;
 
-            entrarAlLobby: function() {
-                this.stats.nombre = document.getElementById("reg_nombre").value || "Soldado";
-                this.stats.genero = document.getElementById("reg-genero").value;
-                document.getElementById("display_nombre_user").innerText = this.stats.nombre;
-                document.getElementById("inicio_pantalla").style.display = "none";
-                document.getElementById("lobby_pantalla").style.display = "flex";
-                
-                this.crearEscena3D();
-            },
+        // 👇👇 AQUÍ ESTÁ BUSCANDO TU ARCHIVO "mi_modelo.glb" 👇👇
+        loader.load('mi_modelo.glb', function (gltf) {
+            personajeLobby = gltf.scene;
+            
+            // Ajustar posición para que quede parado en la plataforma
+            personajeLobby.position.set(0, -1, 0); 
+            
+            // Ajuste automático de tamaño (por si tu modelo es muy grande o muy chico)
+            const caja = new THREE.Box3().setFromObject(personajeLobby);
+            const centro = caja.getCenter(new THREE.Vector3());
+            const tamaño = caja.getSize(new THREE.Vector3());
+            const maxDim = Math.max(tamaño.x, tamaño.y, tamaño.z);
+            const escala = 3.5 / maxDim; // Escala ideal para la pantalla
+            personajeLobby.scale.set(escala, escala, escala);
 
-            crearEscena3D: function() {
-                const container = document.getElementById("threejs_canvas");
-                container.innerHTML = ""; 
-                
-                this.scene = new THREE.Scene();
-                this.scene.background = null; 
-                
-                this.scene.add(new THREE.AmbientLight(0xffffff, 1.2));
-                const luz = new THREE.DirectionalLight(0x00ffff, 1.5);
-                luz.position.set(2, 5, 5);
-                this.scene.add(luz);
+            scene.add(personajeLobby);
+        }, undefined, function (error) {
+            console.warn('Cargando placeholder. Sube tu archivo "mi_modelo.glb" para verlo aquí.');
+            // Si no encuentra tu modelo, dibuja un muñeco temporal para que no veas pantalla blanca
+            const tempGeo = new THREE.BoxGeometry(0.8, 2, 0.8);
+            const tempMat = new THREE.MeshStandardMaterial({color: 0xffffff});
+            personajeLobby = new THREE.Mesh(tempGeo, tempMat);
+            personajeLobby.position.set(0, 0, 0);
+            scene.add(personajeLobby);
+        });
 
-                this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-                this.camera.position.set(0, 1.3, 3.5); 
+        // POSICIÓN DE LA CÁMARA (Mirando al centro de la plataforma)
+        camera.position.set(0, 0.5, 6);
+        camera.lookAt(0, 0.5, 0);
 
-                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.renderer.setClearColor( 0x000000, 0 ); 
-                container.appendChild(this.renderer.domElement);
-                
-                const circuloGeom = new THREE.RingGeometry(0.8, 1.2, 32);
-                const circuloMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
-                const plataforma = new THREE.Mesh(circuloGeom, circuloMat);
-                plataforma.rotation.x = Math.PI / 2;
-                plataforma.position.set(0, -0.3, 0); 
-                this.scene.add(plataforma);
+        // BUCLE DE ANIMACIÓN
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotación épica muy lenta del personaje en el lobby
+            if (personajeLobby) {
+                personajeLobby.rotation.y += 0.005;
+            }
+            // Rotación del aro de luz
+            aro.rotation.z += 0.01;
 
-                const loader = new THREE.GLTFLoader();
-                
-                // 🔥🔥 AQUÍ CAMBIAS EL NOMBRE DE TUS PERSONAJES 🔥🔥
-                const skinUrl = this.stats.genero === "hombre" ? "NOMBRE_SKIN_HOMBRE.glb" : "NOMBRE_SKIN_MUJER.glb";
-                
-                loader.load(skinUrl, (gltf) => {
-                    this.playerModel = gltf.scene;
-                    this.playerModel.position.set(0, -0.3, 0); 
-                    
-                    const box = new THREE.Box3().setFromObject(this.playerModel);
-                    const size = box.getSize(new THREE.Vector3()).length();
-                    if(size > 10) { this.playerModel.scale.set(0.01, 0.01, 0.01); } 
-                    else if(size < 0.5) { this.playerModel.scale.set(10, 10, 10); } 
+            renderer.render(scene, camera);
+        }
+        animate();
 
-                    this.scene.add(this.playerModel);
-                }, undefined, function(error){ console.error("Error cargando Skin:", error); });
+        // AJUSTAR PANTALLA SI CAMBIAS EL TAMAÑO DE LA VENTANA
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
 
-                this.loop();
-            },
-
-            iniciarMatchmakingAutomatico: function() { this.empezarPartida('dia'); },
-            unirseAServidor: function(index) { this.empezarPartida(this.servidoresActivos[index].mapa); },
-
-            empezarPartida: function(clima) {
-                this.cerrarModal();
-                document.getElementById("lobby_pantalla").style.display = "none";
-                document.getElementById("image-background").style.display = "none"; 
-                document.getElementById("hud_pantalla").style.display = "block";
-
-                this.partidaActiva = true;
-
-                if(clima === 'n
+        // FUNCIÓN DEL BOTÓN JUGAR
+        function iniciarJuego() {
+            alert("¡Cargando el mapa de juego! (Aquí conectaremos la lógica de disparos más adelante)");
+            // Para que la música arranque si el navegador la bloqueó por el autoplay
+            document.querySelector('.musica-oculta').src += "&autoplay=1";
+        }
+    </script>
+</body>
+</html>
